@@ -16,7 +16,7 @@ suite('compile', () => {
             'export const Hello = () => <p on:click={() => {}}>hello world!</p>;'
         );
         assert.is(
-            'export const Hello = () => /* @__PURE__ */ createElement("p", { "on:click": () => {\n} }, "hello world!");\n',
+            'export const Hello = () => /* @__PURE__ */ JSX.createElement("p", { "on:click": () => {\n} }, "hello world!");\n',
             result
         );
     });
@@ -44,11 +44,11 @@ suite('compile', () => {
 
         assert.deepEqual(['one', 'two'], order);
         assert.is(
-            'export const Hello = () => /* @__PURE__ */ createElement("p", { "on:click": () => {\n} }, "hello world!");\n',
+            'export const Hello = () => /* @__PURE__ */ JSX.createElement("p", { "on:click": () => {\n} }, "hello world!");\n',
             result1
         );
         assert.is(
-            'export const Hello = () => /* @__PURE__ */ createElement("p", { "on:click": () => {\n} }, "hello there!");\n',
+            'export const Hello = () => /* @__PURE__ */ JSX.createElement("p", { "on:click": () => {\n} }, "hello there!");\n',
             result2
         );
     });
@@ -89,20 +89,21 @@ suite('compile', () => {
         const r3 = await p3;
 
         assert.is(
-            'export const Hello = () => /* @__PURE__ */ createElement("p", { "on:click": () => {\n} }, "hello world!");\n',
+            'export const Hello = () => /* @__PURE__ */ JSX.createElement("p", { "on:click": () => {\n} }, "hello world!");\n',
             r1
         );
         assert.is(
-            'export const Hello = () => /* @__PURE__ */ createElement("p", { "on:click": () => {\n} }, "hello there!");\n',
+            'export const Hello = () => /* @__PURE__ */ JSX.createElement("p", { "on:click": () => {\n} }, "hello there!");\n',
             r2
         );
         assert.is(
-            'export const Hello = () => /* @__PURE__ */ createElement("p", { "on:click": () => {\n} }, "hello three!");\n',
+            'export const Hello = () => /* @__PURE__ */ JSX.createElement("p", { "on:click": () => {\n} }, "hello three!");\n',
             r3
         );
     });
     test('compilation can be waited for in one go', async () => {
         const results: string[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         svc('compile')
             .compile(
                 'export const Hello = () => <p on:click={() => {}}>hello world!</p>;'
@@ -110,6 +111,7 @@ suite('compile', () => {
             .then((r) => {
                 results.push(r);
             });
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         svc('compile')
             .compile(
                 'export const Hello = () => <p on:click={() => {}}>hello there!</p>;'
@@ -122,8 +124,8 @@ suite('compile', () => {
 
         assert.deepEqual(
             [
-                'export const Hello = () => /* @__PURE__ */ createElement("p", { "on:click": () => {\n} }, "hello world!");\n',
-                'export const Hello = () => /* @__PURE__ */ createElement("p", { "on:click": () => {\n} }, "hello there!");\n',
+                'export const Hello = () => /* @__PURE__ */ JSX.createElement("p", { "on:click": () => {\n} }, "hello world!");\n',
+                'export const Hello = () => /* @__PURE__ */ JSX.createElement("p", { "on:click": () => {\n} }, "hello there!");\n',
             ],
             results
         );

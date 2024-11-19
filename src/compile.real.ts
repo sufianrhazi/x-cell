@@ -41,8 +41,8 @@ class RealCompileService implements CompileService {
                 target: 'es2015',
                 platform: 'browser',
                 minify: false,
-                jsxFactory: 'createElement',
-                jsxFragment: 'Fragment',
+                jsxFactory: 'JSX.createElement',
+                jsxFragment: 'JSX.Fragment',
                 loader: 'jsx',
             })
             .then(
