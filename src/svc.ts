@@ -1,7 +1,5 @@
 import type { CompileService } from './compile';
-import type { ConsoleService } from './console';
 import type { JavaScriptService } from './js';
-import type { KeyboardService } from './keyboard';
 import type { ApplicationModel } from './state';
 import type { TimeService } from './time';
 import { assert } from './utils';
@@ -11,8 +9,6 @@ export interface Services {
     js: JavaScriptService;
     state: ApplicationModel;
     compile: CompileService;
-    keyboard: KeyboardService;
-    console: ConsoleService;
 }
 
 let registry: Services | undefined;
