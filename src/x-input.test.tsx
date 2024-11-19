@@ -1,7 +1,6 @@
 import Gooey, { flush, mount, ref } from '@srhazi/gooey';
 import { assert, beforeEach, suite, test } from '@srhazi/gooey-test';
 
-import { svc } from './svc';
 import { _testReset } from './svc.reset';
 import { registerXCell } from './x-cell';
 import { registerXInput } from './x-input';
@@ -10,13 +9,13 @@ registerXCell();
 registerXInput();
 
 let testRoot = document.getElementById('test-root')!;
-beforeEach(async () => {
-    await _testReset();
+beforeEach(() => {
+    _testReset();
     testRoot = document.getElementById('test-root')!;
 });
 
 suite('x-input', () => {
-    test('it reflects value when present', async () => {
+    test('it reflects value when present', () => {
         const xInputRef = ref<HTMLElement>();
         const inputRef = ref<HTMLInputElement>();
         const unmount = mount(
@@ -28,14 +27,9 @@ suite('x-input', () => {
             </>
         );
 
-        await svc('compile').waitForCompiled();
-        flush();
-
         assert.is('hello', inputRef.current?.value);
 
         xInputRef.current?.setAttribute('value', "'world'");
-        flush();
-        await svc('compile').waitForCompiled();
         flush();
 
         assert.is('world', inputRef.current?.value);
@@ -43,7 +37,7 @@ suite('x-input', () => {
         unmount();
     });
 
-    test('it reflects value for numeric elements', async () => {
+    test('it reflects value for numeric elements', () => {
         const xInputRef = ref<HTMLElement>();
         const inputRef = ref<HTMLInputElement>();
         const unmount = mount(
@@ -55,14 +49,11 @@ suite('x-input', () => {
             </>
         );
 
-        await svc('compile').waitForCompiled();
         flush();
 
         assert.is(5, inputRef.current?.valueAsNumber);
 
         xInputRef.current?.setAttribute('value', '10');
-        flush();
-        await svc('compile').waitForCompiled();
         flush();
 
         assert.is(10, inputRef.current?.valueAsNumber);
@@ -70,7 +61,7 @@ suite('x-input', () => {
         unmount();
     });
 
-    test('it reflects value for date elements', async () => {
+    test('it reflects value for date elements', () => {
         const xInputRef = ref<HTMLElement>();
         const inputRef = ref<HTMLInputElement>();
         const unmount = mount(
@@ -82,15 +73,12 @@ suite('x-input', () => {
             </>
         );
 
-        await svc('compile').waitForCompiled();
         flush();
 
         // Note: rounded to date!
         assert.is(1234483200000, inputRef.current?.valueAsDate?.valueOf());
 
         xInputRef.current?.setAttribute('value', 'new Date(2234567890000)');
-        flush();
-        await svc('compile').waitForCompiled();
         flush();
 
         // Note: rounded to date!
@@ -99,7 +87,7 @@ suite('x-input', () => {
         unmount();
     });
 
-    test('value is set when changed', async () => {
+    test('value is set when changed', () => {
         const xInputRef = ref<HTMLElement>();
         const inputRef = ref<HTMLInputElement>();
         const unmount = mount(
@@ -111,11 +99,7 @@ suite('x-input', () => {
             </>
         );
 
-        await svc('compile').waitForCompiled();
-        flush();
-
-        using cool1 = svc('js').ctx.getProp(svc('js').ctx.global, 'cool');
-        assert.is(10, svc('js').ctx.dump(cool1));
+        assert.is(10, (window as any).cool);
 
         inputRef.current!.valueAsNumber = 20;
         inputRef.current?.dispatchEvent(
@@ -123,8 +107,7 @@ suite('x-input', () => {
         );
         flush();
 
-        using cool2 = svc('js').ctx.getProp(svc('js').ctx.global, 'cool');
-        assert.is(20, svc('js').ctx.dump(cool2));
+        assert.is(20, (window as any).cool);
 
         unmount();
     });

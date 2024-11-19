@@ -1,7 +1,6 @@
 import Gooey, { calc, defineCustomElement } from '@srhazi/gooey';
 
 import { DynamicValue } from './DynamicValue';
-import { svc } from './svc';
 
 export function registerXIf() {
     /*
@@ -30,7 +29,7 @@ export function registerXIf() {
                 <>
                     {calc(() => {
                         const value = dynamicValue.resultValue.get();
-                        if (svc('js').isTruthy(value)) {
+                        if (value) {
                             return <slot />;
                         }
                         return null;

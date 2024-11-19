@@ -1,15 +1,14 @@
 import Gooey, { flush, mount, ref } from '@srhazi/gooey';
 import { assert, beforeEach, suite, test } from '@srhazi/gooey-test';
 
-import { svc } from './svc';
 import { _testReset } from './svc.reset';
 import { registerXCell } from './x-cell';
 
 registerXCell();
 
 let testRoot = document.getElementById('test-root')!;
-beforeEach(async () => {
-    await _testReset();
+beforeEach(() => {
+    _testReset();
     testRoot = document.getElementById('test-root')!;
 });
 
@@ -21,11 +20,14 @@ suite('x-cell', () => {
                 <x-cell />
             </>
         );
-        assert.is('<x-cell></x-cell>', testRoot.innerHTML);
+        assert.is(
+            '<x-cell style="display: contents;"></x-cell>',
+            testRoot.innerHTML
+        );
         unmount();
     });
 
-    test('it does nothing when mounted without a name / code', async () => {
+    test('it does nothing when mounted without a name / code', () => {
         const unmount = mount(
             testRoot,
             <>
@@ -33,27 +35,23 @@ suite('x-cell', () => {
                 <x-cell code="42" />
             </>
         );
-        await svc('compile').waitForCompiled();
-        using cool = svc('js').ctx.getProp(svc('js').ctx.global, 'cool');
-        assert.is(undefined, svc('js').ctx.dump(cool));
+        assert.is(undefined, (window as any).cool);
         unmount();
     });
 
-    test('it evaluates code at name/code pair', async () => {
+    test('it evaluates code at name/code pair', () => {
         const unmount = mount(
             testRoot,
             <>
                 <x-cell name="cool" code="42" debug="debug" />
             </>
         );
-        await svc('compile').waitForCompiled();
         flush();
-        using cool = svc('js').ctx.getProp(svc('js').ctx.global, 'cool');
-        assert.is(42, svc('js').ctx.dump(cool));
+        assert.is(42, (window as any).cool);
         unmount();
     });
 
-    test('it evaluates arbitrary code', async () => {
+    test('it evaluates arbitrary code', () => {
         const unmount = mount(
             testRoot,
             <>
@@ -62,13 +60,11 @@ suite('x-cell', () => {
                 <x-cell name="both" code="cool + fun" />
             </>
         );
-        await svc('compile').waitForCompiled();
-        using both = svc('js').ctx.getProp(svc('js').ctx.global, 'both');
-        assert.is(66, svc('js').ctx.dump(both));
+        assert.is(66, (window as any).both);
         unmount();
     });
 
-    test('it updates dependencies', async () => {
+    test('it updates dependencies', () => {
         const coolRef = ref<HTMLElement>();
         const unmount = mount(
             testRoot,
@@ -79,22 +75,18 @@ suite('x-cell', () => {
             </>
         );
 
-        await svc('compile').waitForCompiled();
         flush();
-        using both = svc('js').ctx.getProp(svc('js').ctx.global, 'both');
-        assert.is(66, svc('js').ctx.dump(both));
+        assert.is(66, (window as any).both);
 
         coolRef.current?.setAttribute('code', '1000');
         flush();
-        await svc('compile').waitForCompiled();
-        flush();
-        using both2 = svc('js').ctx.getProp(svc('js').ctx.global, 'both');
-        assert.is(1024, svc('js').ctx.dump(both2));
+
+        assert.is(1024, (window as any).both);
 
         unmount();
     });
 
-    test('it memoizes results', async () => {
+    test('it memoizes results', () => {
         const indexRef = ref<HTMLElement>();
         const unmount = mount(
             testRoot,
@@ -105,22 +97,16 @@ suite('x-cell', () => {
             </>
         );
 
-        await svc('compile').waitForCompiled();
-        using index = svc('js').ctx.getProp(svc('js').ctx.global, 'index');
-        assert.is(0, svc('js').ctx.dump(index));
-        using list = svc('js').ctx.getProp(svc('js').ctx.global, 'list');
-        assert.deepEqual([0, 1, 'neat'], svc('js').ctx.dump(list));
-        using pointer = svc('js').ctx.getProp(svc('js').ctx.global, 'pointer');
-        assert.is(0, svc('js').ctx.dump(pointer));
+        assert.is(0, (window as any).index);
+        assert.deepEqual([0, 1, 'neat'], (window as any).list);
+        assert.is(0, (window as any).pointer);
+        const listBefore = (window as any).list;
 
         indexRef.current?.setAttribute('code', '2');
         flush();
-        await svc('compile').waitForCompiled();
-        flush();
-        using pointer2 = svc('js').ctx.getProp(svc('js').ctx.global, 'pointer');
-        assert.is('neat', svc('js').ctx.dump(pointer2));
-        using list2 = svc('js').ctx.getProp(svc('js').ctx.global, 'list');
-        assert.is(true, svc('js').eq(list, list2));
+
+        assert.is('neat', (window as any).pointer);
+        assert.is(listBefore, (window as any).list);
 
         unmount();
     });

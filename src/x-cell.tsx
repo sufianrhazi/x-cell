@@ -1,7 +1,6 @@
 import Gooey, { calc, defineCustomElement, dynGet } from '@srhazi/gooey';
 
 import { DynamicValue } from './DynamicValue';
-import { svc } from './svc';
 
 export function registerXCell() {
     /*
@@ -32,10 +31,7 @@ export function registerXCell() {
 
             return (
                 <>
-                    {calc(() => {
-                        using display = displayValue.resultValue.get().dup();
-                        return svc('js').vmToHost(display, () => {});
-                    })}
+                    {calc(() => displayValue.resultValue.get())}
                     {calc(() => {
                         if (dynGet(debug) === 'debug') {
                             return (
@@ -43,22 +39,10 @@ export function registerXCell() {
                                     <pre>name: {name}</pre>
                                     <pre>code: {code}</pre>
                                     <pre>
-                                        compiledState:{' '}
-                                        {calc(() =>
-                                            JSON.stringify(
-                                                dynamicValue.getCompiledState(),
-                                                null,
-                                                2
-                                            )
-                                        )}
-                                    </pre>
-                                    <pre>
                                         value:{' '}
                                         {calc(() =>
                                             JSON.stringify(
-                                                svc('js').ctx.dump(
-                                                    dynamicValue.resultValue.get()
-                                                ),
+                                                dynamicValue.resultValue.get(),
                                                 null,
                                                 2
                                             )

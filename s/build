@@ -20,4 +20,3 @@ rm -rf prod/dist/
 
 echo_info "Building..."
 npm exec -- vite build --config=./vite.prod.config.js
-cp ./node_modules/esbuild-wasm/esbuild.wasm prod/dist/esbuild.wasm

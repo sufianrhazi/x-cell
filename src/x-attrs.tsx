@@ -1,7 +1,6 @@
 import Gooey, { defineCustomElement } from '@srhazi/gooey';
 
 import { DynamicValue } from './DynamicValue';
-import { svc } from './svc';
 
 export function registerXAttrs() {
     /*
@@ -29,11 +28,9 @@ export function registerXAttrs() {
                     if (err) {
                         return;
                     }
-                    const obj: unknown = svc('js').vmToHost(val, () => {});
-                    console.log('NEAT', obj);
-                    if (obj && typeof obj === 'object') {
+                    if (val && typeof val === 'object') {
                         for (const child of Array.from(host.children)) {
-                            for (const [key, value] of Object.entries(obj)) {
+                            for (const [key, value] of Object.entries(val)) {
                                 if (typeof value === 'string') {
                                     child.setAttribute(key, value);
                                 }

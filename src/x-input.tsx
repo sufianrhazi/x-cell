@@ -1,7 +1,6 @@
 import Gooey, { calc, defineCustomElement, dynGet } from '@srhazi/gooey';
 
 import { DynamicValue } from './DynamicValue';
-import { svc } from './svc';
 
 export function registerXInput() {
     /*
@@ -39,18 +38,12 @@ export function registerXInput() {
                         // Boolean input types:
                         case 'radio':
                         case 'checkbox':
-                            dynamicValue.setOverride(
-                                element.checked
-                                    ? svc('js').ctx.true
-                                    : svc('js').ctx.false
-                            );
+                            dynamicValue.setOverride(!!element.checked);
                             break;
                         // Numeric input types:
                         case 'number':
                         case 'range':
-                            dynamicValue.setOverride(
-                                svc('js').ctx.newNumber(element.valueAsNumber)
-                            );
+                            dynamicValue.setOverride(element.valueAsNumber);
                             break;
                         // Date input types:
                         case 'date':
@@ -60,10 +53,9 @@ export function registerXInput() {
                         case 'time':
                         case 'week': {
                             if (element.valueAsDate) {
-                                using dateValue = svc('js').newDate(
+                                dynamicValue.setOverride(
                                     element.valueAsDate.valueOf()
                                 );
-                                dynamicValue.setOverride(dateValue);
                             } else {
                                 dynamicValue.clearOverride();
                             }
@@ -78,19 +70,13 @@ export function registerXInput() {
                         case 'text':
                         case 'url':
                         default:
-                            dynamicValue.setOverride(
-                                svc('js').ctx.newString(element.value)
-                            );
+                            dynamicValue.setOverride(element.value);
                             break;
                     }
                 } else if (element instanceof HTMLSelectElement) {
-                    dynamicValue.setOverride(
-                        svc('js').ctx.newString(element.value)
-                    );
+                    dynamicValue.setOverride(element.value);
                 } else if (element instanceof HTMLTextAreaElement) {
-                    dynamicValue.setOverride(
-                        svc('js').ctx.newString(element.value)
-                    );
+                    dynamicValue.setOverride(element.value);
                 }
             }
 
@@ -128,23 +114,15 @@ export function registerXInput() {
                                     // Boolean input types:
                                     case 'radio':
                                     case 'checkbox':
-                                        if (
-                                            svc('js').ctx.typeof(val) ===
-                                            'boolean'
-                                        ) {
-                                            el.checked =
-                                                svc('js').isTruthy(val);
+                                        if (typeof val === 'boolean') {
+                                            el.checked = !!val;
                                         }
                                         break;
                                     // Numeric input types:
                                     case 'number':
                                     case 'range':
-                                        if (
-                                            svc('js').ctx.typeof(val) ===
-                                            'number'
-                                        ) {
-                                            el.valueAsNumber =
-                                                svc('js').ctx.getNumber(val);
+                                        if (typeof val === 'number') {
+                                            el.valueAsNumber = val;
                                         }
                                         break;
                                     // Date input types:
@@ -152,13 +130,8 @@ export function registerXInput() {
                                     case 'month':
                                     case 'time':
                                     case 'week': {
-                                        if (svc('js').isDate(val)) {
-                                            using when = svc('js')
-                                                .ctx.callMethod(val, 'valueOf')
-                                                .unwrap();
-                                            el.valueAsDate = new Date(
-                                                svc('js').ctx.getNumber(when)
-                                            );
+                                        if (val instanceof Date) {
+                                            el.valueAsDate = val;
                                         }
                                         break;
                                     }
@@ -172,19 +145,15 @@ export function registerXInput() {
                                     case 'text':
                                     case 'url':
                                     default:
-                                        if (
-                                            svc('js').ctx.typeof(val) ===
-                                            'string'
-                                        ) {
-                                            el.value =
-                                                svc('js').ctx.getString(val);
+                                        if (typeof val === 'string') {
+                                            el.value = val;
                                         }
                                         break;
                                 }
                             } else if (el instanceof HTMLSelectElement) {
-                                el.value = svc('js').ctx.getString(val);
+                                el.value = val;
                             } else if (el instanceof HTMLTextAreaElement) {
-                                el.value = svc('js').ctx.getString(val);
+                                el.value = val;
                             }
                         }
                     }

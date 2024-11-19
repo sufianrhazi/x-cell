@@ -11,12 +11,8 @@ export default defineConfig({
     esbuild: {
         target: 'es2019',
     },
-    optimizeDeps: {
-        exclude: ['quickjs-emscripten', 'esbuild-emscripten'],
-    },
     define: {
         VERSION: '"dev"',
-        ESBUILD_WASM_URL: '"/node_modules/esbuild-wasm/esbuild.wasm"',
     },
     server: {
         https: {

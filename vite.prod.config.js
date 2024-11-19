@@ -13,11 +13,7 @@ export default defineConfig({
     esbuild: {
         target: 'es2019',
     },
-    optimizeDeps: {
-        exclude: ['quickjs-emscripten', 'esbuild-emscripten'],
-    },
     define: {
         VERSION: JSON.stringify(`prod:${version}`),
-        ESBUILD_WASM_URL: '"./esbuild.wasm"',
     },
 });
