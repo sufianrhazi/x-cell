@@ -1,4 +1,4 @@
-import { calc, createElement } from '@srhazi/gooey';
+import { calc, createElement, Fragment } from '@srhazi/gooey';
 import * as esbuild from 'esbuild-wasm';
 import { getQuickJS } from 'quickjs-emscripten';
 import type {
@@ -21,11 +21,15 @@ class RealService implements JavaScriptService {
 
     private vmProxy: QuickJSHandle;
     private vmReflect: QuickJSHandle;
+    private vmDate: QuickJSHandle;
     private vmError: QuickJSHandle;
     private vmArray: QuickJSHandle;
     private vmIs: QuickJSHandle;
     private vmTruthy: QuickJSHandle;
+    private vmHasInstance: QuickJSHandle;
+    private jsxHandle: QuickJSHandle;
     private createElementHandle: QuickJSHandle;
+    private fragmentHandle: QuickJSHandle;
     private calcHandle: QuickJSHandle;
     private jsxSymbol: QuickJSHandle;
     private calcSymbol: QuickJSHandle;
@@ -40,22 +44,33 @@ class RealService implements JavaScriptService {
         this.ctx = this.runtime.newContext();
         this.vmProxy = this.ctx.getProp(this.ctx.global, 'Proxy');
         this.vmReflect = this.ctx.getProp(this.ctx.global, 'Reflect');
+        this.vmDate = this.ctx.getProp(this.ctx.global, 'Date');
         this.vmError = this.ctx.getProp(this.ctx.global, 'Error');
         this.vmArray = this.ctx.getProp(this.ctx.global, 'Array');
         this.vmIs = this.eval('(a, b) => a === b');
         this.vmTruthy = this.eval('(val) => !!val');
+        this.vmHasInstance = this.ctx
+            .getProp(this.ctx.global, 'Symbol')
+            .consume((vmSymbol) => this.ctx.getProp(vmSymbol, 'hasInstance'));
 
         this.jsxSymbol = this.ctx.newSymbolFor('__jsx__');
         this.calcSymbol = this.ctx.newSymbolFor('__calc__');
+        this.jsxHandle = this.ctx.newObject();
+        this.ctx.setProp(this.ctx.global, 'JSX', this.jsxHandle);
         this.createElementHandle = this.ctx.newFunction(
             'createElement',
             this.createElementImpl
         );
+        this.fragmentHandle = this.ctx.newFunction(
+            'Fragment',
+            this.fragmentImpl
+        );
         this.ctx.setProp(
-            this.ctx.global,
+            this.jsxHandle,
             'createElement',
             this.createElementHandle
         );
+        this.ctx.setProp(this.jsxHandle, 'Fragment', this.fragmentHandle);
         this.calcHandle = this.ctx.newFunction('calc', this.calcImpl);
         this.ctx.setProp(this.ctx.global, 'calc', this.calcHandle);
     }
@@ -80,6 +95,17 @@ class RealService implements JavaScriptService {
                 .dispose();
         }
         this.ctx.setProp(obj, 'children', childrenHandle);
+        return obj;
+    };
+
+    private fragmentImpl = (propsHandle: QuickJSHandle): QuickJSHandle => {
+        if (!propsHandle) {
+            throw new Error('Unexpected arguments to Fragment');
+        }
+        const obj = this.ctx.newObject();
+        this.ctx.setProp(obj, this.jsxSymbol, this.ctx.true);
+        this.ctx.setProp(obj, 'fragment', this.ctx.true);
+        this.ctx.setProp(obj, 'props', propsHandle);
         return obj;
     };
 
@@ -120,6 +146,17 @@ class RealService implements JavaScriptService {
         const arrayArgs = this.ctx.newArray();
         this.ctx.callMethod(arrayArgs, 'push', args).unwrap().dispose();
         return this.ctx.callMethod(this.vmReflect, 'construct', args).unwrap();
+    }
+
+    newDate(msSinceEpoch: number) {
+        return this.new(this.vmDate, [this.ctx.newNumber(msSinceEpoch)]);
+    }
+
+    isDate(handle: QuickJSHandle) {
+        using result = this.ctx
+            .callMethod(this.vmDate, this.vmHasInstance, [handle])
+            .unwrap();
+        return this.isTruthy(result);
     }
 
     eq(a: QuickJSHandle, b: QuickJSHandle) {
@@ -289,13 +326,24 @@ class RealService implements JavaScriptService {
 
     vmToHost(handle: QuickJSHandle, toDisposeCallback: ToDisposeCallback): any {
         if (this.isJsxValue(handle)) {
-            using nameHandle = this.ctx.getProp(handle, 'name');
-            using propsHandle = this.ctx.getProp(handle, 'props');
-            using childrenHandle = this.ctx.getProp(handle, 'children');
-            const name = this.vmToHost(nameHandle, toDisposeCallback);
-            const props = this.vmToHost(propsHandle, toDisposeCallback);
-            const children = this.vmToHost(childrenHandle, toDisposeCallback);
-            return createElement(name, props, children);
+            using fragmentHandle = this.ctx.getProp(handle, 'fragment');
+            console.log('HI', this.ctx.dump(handle));
+            if (this.isTruthy(fragmentHandle)) {
+                using propsHandle = this.ctx.getProp(handle, 'props');
+                const props = this.vmToHost(propsHandle, toDisposeCallback);
+                return Fragment({ children: props.children });
+            } else {
+                using nameHandle = this.ctx.getProp(handle, 'name');
+                using propsHandle = this.ctx.getProp(handle, 'props');
+                using childrenHandle = this.ctx.getProp(handle, 'children');
+                const name = this.vmToHost(nameHandle, toDisposeCallback);
+                const props = this.vmToHost(propsHandle, toDisposeCallback);
+                const children = this.vmToHost(
+                    childrenHandle,
+                    toDisposeCallback
+                );
+                return createElement(name, props, children);
+            }
         }
         if (this.isCalcValue(handle)) {
             using fnHandle = this.ctx.getProp(handle, 'calc');
@@ -486,13 +534,17 @@ class RealService implements JavaScriptService {
     dispose() {
         this.vmProxy.dispose();
         this.vmReflect.dispose();
+        this.vmDate.dispose();
         this.vmError.dispose();
         this.vmArray.dispose();
         this.vmIs.dispose();
         this.vmTruthy.dispose();
+        this.vmHasInstance.dispose();
         this.jsxSymbol.dispose();
         this.calcSymbol.dispose();
+        this.jsxHandle.dispose();
         this.createElementHandle.dispose();
+        this.fragmentHandle.dispose();
         this.calcHandle.dispose();
         this.ctx.dispose();
         this.runtime.dispose();

@@ -453,7 +453,7 @@ suite('JavaScript VM', () => {
 
     test('jsx can be rendered', () => {
         using val = real.eval(
-            'createElement("p", {}, [createElement("span", {}, ["hello"]), "world"])'
+            'JSX.createElement("p", {}, [JSX.createElement("span", {}, ["hello"]), "world"])'
         );
         const result = real.vmToHost(val, garbage.manage);
         const unmount = mount(testRoot, result);
@@ -472,7 +472,7 @@ suite('JavaScript VM', () => {
             },
         });
         using val = real.eval(
-            'createElement("p", {}, [createElement("span", {}, [calc(() => greeting)]), "world"])'
+            'JSX.createElement("p", {}, [JSX.createElement("span", {}, [calc(() => greeting)]), "world"])'
         );
         const result = real.vmToHost(val, garbage.manage);
         const unmount = mount(testRoot, result);
@@ -483,6 +483,31 @@ suite('JavaScript VM', () => {
         greeting.set('Goodbye');
         flush();
         assert.is('<p><span>Goodbye</span>world</p>', testRoot.innerHTML);
+        unmount();
+    });
+
+    test('jsx with fragment can be rendered and is bound to the DOM', () => {
+        const greeting = field('hello');
+        real.defineProperty(real.ctx.global, 'greeting', {
+            get() {
+                return real.ctx.newString(greeting.get());
+            },
+            set() {
+                throw new Error('Setting not allowed');
+            },
+        });
+        using val = real.eval(
+            'JSX.createElement("p", {}, [JSX.Fragment({ children: [calc(() => greeting), " world"] })])'
+        );
+        const result = real.vmToHost(val, garbage.manage);
+        const unmount = mount(testRoot, result);
+        assert.is('<p>hello world</p>', testRoot.innerHTML);
+        greeting.set('Howdy');
+        flush();
+        assert.is('<p>Howdy world</p>', testRoot.innerHTML);
+        greeting.set('Goodbye');
+        flush();
+        assert.is('<p>Goodbye world</p>', testRoot.innerHTML);
         unmount();
     });
 });

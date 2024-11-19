@@ -17,42 +17,40 @@ type CompiledState =
 
 let maxId = 0;
 
-/*
- * <x-if condition="42"></x-if> - a conditional 'display cell'
- *
- * Attributes:
- * - condition (string) - must be a valid, JavaScript expression
- *
- * If the cell's expression evaluates to true, then the children are displayed.
- *
- * Otherwise, the children are not displayed.
- *
- */
-defineCustomElement({
-    tagName: 'x-if',
-    shadowMode: 'open',
-    observedAttributes: ['condition'],
-    Component: ({ condition }, { onDestroy }) => {
-        const dynamicValue = new DynamicValue(undefined, condition);
-        onDestroy(() => {
-            dynamicValue.dispose();
-        });
+export function registerXIf() {
+    /*
+     * <x-if condition="42"></x-if> - a conditional 'display cell'
+     *
+     * Attributes:
+     * - condition (string) - must be a valid, JavaScript expression
+     *
+     * If the cell's expression evaluates to true, then the children are displayed.
+     *
+     * Otherwise, the children are not displayed.
+     *
+     */
+    defineCustomElement({
+        tagName: 'x-if',
+        shadowMode: 'open',
+        observedAttributes: ['condition'],
+        Component: ({ condition }, { onDestroy, host }) => {
+            host.style.display = 'contents';
+            const dynamicValue = new DynamicValue(undefined, condition);
+            onDestroy(() => {
+                dynamicValue.dispose();
+            });
 
-        return (
-            <>
-                {calc(() => {
-                    const value = dynamicValue.evaluatedValue.get();
-                    if (svc('js').isTruthy(value)) {
-                        console.log(
-                            'value is truthy',
-                            svc('js').ctx.dump(value)
-                        );
-                        return <slot />;
-                    }
-                    console.log('value is not truthy');
-                    return null;
-                })}
-            </>
-        );
-    },
-});
+            return (
+                <>
+                    {calc(() => {
+                        const value = dynamicValue.resultValue.get();
+                        if (svc('js').isTruthy(value)) {
+                            return <slot />;
+                        }
+                        return null;
+                    })}
+                </>
+            );
+        },
+    });
+}

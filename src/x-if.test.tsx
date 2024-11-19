@@ -1,11 +1,13 @@
 import Gooey, { flush, mount, ref } from '@srhazi/gooey';
 import { assert, beforeEach, suite, test } from '@srhazi/gooey-test';
 
-import './x-cell';
-import './x-if';
-
 import { svc } from './svc';
 import { _testReset } from './svc.reset';
+import { registerXCell } from './x-cell';
+import { registerXIf } from './x-if';
+
+registerXCell();
+registerXIf();
 
 let testRoot = document.getElementById('test-root')!;
 beforeEach(async () => {

@@ -30,6 +30,15 @@ export interface JavaScriptService {
     /** Check strict equality (===) within the vm */
     eq: (a: QuickJSHandle, b: QuickJSHandle) => boolean;
 
+    /** Use the "new" operator */
+    'new'(constructor: QuickJSHandle, args: QuickJSHandle[]): QuickJSHandle;
+
+    /** Build a Date instance */
+    newDate(msSinceEpoch: number): QuickJSHandle;
+
+    /** Check if it is a Date instance */
+    isDate(handle: QuickJSHandle): boolean;
+
     /** Check truthiness within the vm */
     isTruthy: (value: QuickJSHandle) => boolean;
 

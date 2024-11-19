@@ -20,11 +20,6 @@ mount(
             <li>
                 <a href="/app.html">Run App</a>
             </li>
-            {examples.map((example) => (
-                <li>
-                    <a href={example.src}>{example.src}</a>
-                </li>
-            ))}
         </ul>
     </>
 );

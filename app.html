@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8">
+        <title>x-cell</title>
+    </head>
+    <body>
+        <h1><code>&lt;x-cell&gt;</code> is a new framework</h1>
+        <div>
+            <p>Here's a color:</p>
+            <x-input name="color">
+                <input type="color" value="#880000" />
+            </x-input>
+            <x-attrs attrs="({ style: `color: ${color};` })">
+                <p>This text should be the above color</p>
+            </x-attrs>
+            <p>Here is an input:</p>
+            <x-input name="value">
+                <input type="range" min="-100" value="0" max="100" />
+            </x-input>
+            <p>The above value is <x-cell display="value"></x-cell></p>
+            <p>If the input is greater than zero, we say so: <x-if condition="value > 0">it is positive</x-if></p>
+            <x-input value="value">
+                <input type="number" min="-100" value="0" max="100" />
+            </x-input>
+        </div>
+        <script type="module" src="./src/index.ts"></script>
+    </body>
+</html>
