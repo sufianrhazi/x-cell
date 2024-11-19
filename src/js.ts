@@ -30,6 +30,9 @@ export interface JavaScriptService {
     /** Check strict equality (===) within the vm */
     eq: (a: QuickJSHandle, b: QuickJSHandle) => boolean;
 
+    /** Check truthiness within the vm */
+    isTruthy: (value: QuickJSHandle) => boolean;
+
     /** Equivalent to the `delete` keyword */
     deleteProp: (target: QuickJSHandle, key: QuickJSHandle) => boolean;
 

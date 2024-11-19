@@ -24,6 +24,7 @@ class RealService implements JavaScriptService {
     private vmError: QuickJSHandle;
     private vmArray: QuickJSHandle;
     private vmIs: QuickJSHandle;
+    private vmTruthy: QuickJSHandle;
     private createElementHandle: QuickJSHandle;
     private calcHandle: QuickJSHandle;
     private jsxSymbol: QuickJSHandle;
@@ -42,6 +43,7 @@ class RealService implements JavaScriptService {
         this.vmError = this.ctx.getProp(this.ctx.global, 'Error');
         this.vmArray = this.ctx.getProp(this.ctx.global, 'Array');
         this.vmIs = this.eval('(a, b) => a === b');
+        this.vmTruthy = this.eval('(val) => !!val');
 
         this.jsxSymbol = this.ctx.newSymbolFor('__jsx__');
         this.calcSymbol = this.ctx.newSymbolFor('__calc__');
@@ -123,6 +125,18 @@ class RealService implements JavaScriptService {
     eq(a: QuickJSHandle, b: QuickJSHandle) {
         using result = this.ctx
             .callFunction(this.vmIs, this.ctx.undefined, [a, b])
+            .unwrap();
+        assert(
+            'boolean' === this.ctx.typeof(result),
+            'Expected boolean from an equality check'
+        );
+        const val = this.ctx.dump(result) as boolean;
+        return val;
+    }
+
+    isTruthy(value: QuickJSHandle) {
+        using result = this.ctx
+            .callFunction(this.vmTruthy, this.ctx.undefined, [value])
             .unwrap();
         assert(
             'boolean' === this.ctx.typeof(result),
@@ -475,6 +489,7 @@ class RealService implements JavaScriptService {
         this.vmError.dispose();
         this.vmArray.dispose();
         this.vmIs.dispose();
+        this.vmTruthy.dispose();
         this.jsxSymbol.dispose();
         this.calcSymbol.dispose();
         this.createElementHandle.dispose();
