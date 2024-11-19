@@ -1,4 +1,4 @@
-import { calc, dynGet, dynSubscribe, field } from '@srhazi/gooey';
+import { calc, dynSubscribe, field } from '@srhazi/gooey';
 import type { Calculation, Dyn, Field } from '@srhazi/gooey';
 import type { QuickJSHandle } from 'quickjs-emscripten';
 
@@ -11,7 +11,7 @@ type CompiledState =
 
 let maxId = 0;
 
-let globals = field(new Set<string>());
+const globals = field(new Set<string>());
 
 export class DynamicValue implements Disposable {
     resultValue: Calculation<QuickJSHandle>;
@@ -129,6 +129,9 @@ export class DynamicValue implements Disposable {
                 get: () => {
                     const result = this.resultValue.get().dup();
                     return result;
+                },
+                set: (value: QuickJSHandle) => {
+                    this.setOverride(value);
                 },
                 configurable: true,
                 enumerable: true,

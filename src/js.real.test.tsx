@@ -18,7 +18,7 @@ suite('JavaScript VM', () => {
         testRoot = document.getElementById('test-root')!;
     });
 
-    afterEach(async () => {
+    afterEach(() => {
         garbage.dispose();
         real.dispose();
     });
@@ -78,7 +78,7 @@ suite('JavaScript VM', () => {
     });
 
     test('it can access globals defined at eval-time', () => {
-        const sets: any = [];
+        const sets: any[] = [];
         real.defineProperty(real.ctx.global, 'myValue', {
             get() {
                 return real.ctx.newString('hello');
@@ -412,7 +412,7 @@ suite('JavaScript VM', () => {
         real.eval('calls = 0').dispose();
         real.eval('myFunc = () => { calls += 1; }').dispose();
         using vmFunc = real.eval('myFunc');
-        const hostFunc = real.vmToHost(vmFunc, garbage.manage);
+        const hostFunc = real.vmToHost(vmFunc, garbage.manage) as () => void;
 
         using calls1 = real.eval('calls');
         assert.is(0, real.vmToHost(calls1, garbage.manage));
@@ -427,7 +427,9 @@ suite('JavaScript VM', () => {
         real.eval('items = []').dispose();
         real.eval('myFunc = (param) => { items.push(param); }').dispose();
         using vmFunc = real.eval('myFunc');
-        const hostFunc = real.vmToHost(vmFunc, garbage.manage);
+        const hostFunc = real.vmToHost(vmFunc, garbage.manage) as (
+            param: any
+        ) => void;
 
         using items1 = real.eval('items');
         assert.deepEqual([], real.vmToHost(items1, garbage.manage));
@@ -446,7 +448,9 @@ suite('JavaScript VM', () => {
             'myFunc = (param) => { return { cool: "it works" }; }'
         ).dispose();
         using vmFunc = real.eval('myFunc');
-        const hostFunc = real.vmToHost(vmFunc, garbage.manage);
+        const hostFunc = real.vmToHost(vmFunc, garbage.manage) as (
+            param?: any
+        ) => void;
 
         assert.deepEqual({ cool: 'it works' }, hostFunc());
     });
@@ -455,7 +459,7 @@ suite('JavaScript VM', () => {
         using val = real.eval(
             'JSX.createElement("p", {}, [JSX.createElement("span", {}, ["hello"]), "world"])'
         );
-        const result = real.vmToHost(val, garbage.manage);
+        const result = real.vmToHost(val, garbage.manage) as JSX.Element;
         const unmount = mount(testRoot, result);
         assert.is('<p><span>hello</span>world</p>', testRoot.innerHTML);
         unmount();
@@ -474,7 +478,7 @@ suite('JavaScript VM', () => {
         using val = real.eval(
             'JSX.createElement("p", {}, [JSX.createElement("span", {}, [calc(() => greeting)]), "world"])'
         );
-        const result = real.vmToHost(val, garbage.manage);
+        const result = real.vmToHost(val, garbage.manage) as JSX.Element;
         const unmount = mount(testRoot, result);
         assert.is('<p><span>hello</span>world</p>', testRoot.innerHTML);
         greeting.set('Howdy');
@@ -499,7 +503,7 @@ suite('JavaScript VM', () => {
         using val = real.eval(
             'JSX.createElement("p", {}, [JSX.Fragment({ children: [calc(() => greeting), " world"] })])'
         );
-        const result = real.vmToHost(val, garbage.manage);
+        const result = real.vmToHost(val, garbage.manage) as JSX.Element;
         const unmount = mount(testRoot, result);
         assert.is('<p>hello world</p>', testRoot.innerHTML);
         greeting.set('Howdy');

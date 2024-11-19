@@ -20,6 +20,4 @@ rm -rf prod/dist/
 
 echo_info "Building..."
 npm exec -- vite build --config=./vite.prod.config.js
-
-echo_info "Linking..."
-ln -s ./chat.html prod/dist/index.html
+cp ./node_modules/esbuild-wasm/esbuild.wasm prod/dist/esbuild.wasm

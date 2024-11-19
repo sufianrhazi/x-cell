@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8">
+        <title>Build</title>
+    </head>
+    <body>
+        <x-input name="hello">
+            <input type="text" placeholder="What's your name" />
+        </x-input>
+        <x-cell display="<p>Number of clicks: {clicks}</p>" name="clicks" code="0"></x-cell>
+        <p>Hello, <x-cell display="hello || 'there'"></x-cell>!</p>
+        <p>Cool: <x-cell display="<button on:click={() => clicks++}>Click me</button>"></x-cell></p>
+        <script type="module" src="../src/index.ts"></script>
+    </body>
+</html>

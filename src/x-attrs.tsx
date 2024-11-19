@@ -1,21 +1,7 @@
-import Gooey, {
-    calc,
-    defineCustomElement,
-    dynGet,
-    dynSubscribe,
-    field,
-} from '@srhazi/gooey';
-import type { QuickJSHandle } from 'quickjs-emscripten';
+import Gooey, { defineCustomElement } from '@srhazi/gooey';
 
 import { DynamicValue } from './DynamicValue';
 import { svc } from './svc';
-
-type CompiledState =
-    | { type: 'compiling'; source: string }
-    | { type: 'compiled'; source: string; compiled: string }
-    | { type: 'error'; source: string; error: string };
-
-let maxId = 0;
 
 export function registerXAttrs() {
     /*

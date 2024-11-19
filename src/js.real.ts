@@ -327,11 +327,20 @@ class RealService implements JavaScriptService {
     vmToHost(handle: QuickJSHandle, toDisposeCallback: ToDisposeCallback): any {
         if (this.isJsxValue(handle)) {
             using fragmentHandle = this.ctx.getProp(handle, 'fragment');
-            console.log('HI', this.ctx.dump(handle));
             if (this.isTruthy(fragmentHandle)) {
                 using propsHandle = this.ctx.getProp(handle, 'props');
-                const props = this.vmToHost(propsHandle, toDisposeCallback);
-                return Fragment({ children: props.children });
+                const props: unknown = this.vmToHost(
+                    propsHandle,
+                    toDisposeCallback
+                );
+                assert(
+                    props && typeof props === 'object' && 'children' in props
+                );
+                return createElement(
+                    Fragment,
+                    {},
+                    props.children as JSX.Node | JSX.Node[]
+                );
             } else {
                 using nameHandle = this.ctx.getProp(handle, 'name');
                 using propsHandle = this.ctx.getProp(handle, 'props');
