@@ -2,15 +2,108 @@
 <html lang="en-US">
     <head>
         <meta charset="UTF-8">
-        <title>Build</title>
+        <title>x-cell</title>
+<style>
+html,body {
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 20px;
+}
+code,pre {
+    background-color: #DDE0EE;
+    border-radius: 4px;
+    padding: 1px 2px;
+    font-size: 0.8em;
+    width: min-content;
+}
+h2 {
+    margin-top: 3em;
+}
+</style>
     </head>
     <body>
-        <x-input name="hello">
-            <input type="text" placeholder="What's your name" />
+        <h1><code>&lt;x-cell&gt;</code> is a (joke?) reactive HTML framework</h1>
+        <p>It is just HTML with a few new elements.</p>
+
+        <h2>x-cell</h2>
+        <p>A named, dynamic evaluation of code; which may also have a display.</p>
+        <pre>&lt;x-cell
+    name="myValue"
+    code="42"
+    display="`myValue is ${myValue}`"
+&gt;&lt;/x-cell&gt;</pre>
+        <p>This makes a cell named <code>myName</code> that evaluates to <code>42</code> and displays <code>myValue is 42</code></p>
+
+        <p>
+            Here's what it looks like: 
+            <x-cell 
+                name="myValue"
+                code="40 + 2"
+                display="`myValue is ${myValue}`"
+            ></x-cell>
+        </p>
+
+        <h2>x-input</h2>
+        <p>Bind a child input to a named value.</p>
+        <pre>&lt;x-input name="myInputValue"&gt;
+    &lt;input type="text" /&gt;
+&lt;/x-input&gt;</pre>
+        <p>This makes a cell named "myInputValue" that holds the contents of its child <code>&lt;input&gt;</code></p>
+
+        <label>
+            Say the magic word:
+            <x-input name="myInputValue">
+                <input type="text" placeholder="hint: it is 'open sesame'" />
+            </x-input>
+        </label>
+
+        <h2>x-if</h2>
+        <p>Conditionally show HTML.</p>
+        <pre>&lt;x-if condition="myInputValue === 'open sesame'"&gt;
+    Anything you like can go here
+&lt;/x-if&gt;</pre>
+        <p>This makes a cell that shows its children if the condition is true</p>
+
+        <p>Try saying the magic word above. You've entered: <x-cell display="myInputValue"></x-cell></p>
+
+        <x-if condition="myInputValue === 'open sesame'">
+            <p><strong>Hey, look at that! You said the magic word!</strong></p>
+        </x-if>
+
+        <h2>x-attrs</h2>
+        <p>Bind attributes to child elements.</p>
+        <pre>&lt;x-attrs attrs="({ style: `color: ${textColor};` })"&gt;
+    &lt;p&gt;This text will be styled&lt;/p&gt;
+&lt;/x-attrs&gt;
+&lt;x-input name="textColor"&gt;
+    &lt;input type="color"&gt;
+&lt;/x-input&gt;</pre>
+        
+        <p>These elements can be combined together to create dynamic content</p>
+        <x-input name="textColor">
+            <input type="color">
         </x-input>
-        <x-cell display="<p>Number of clicks: {clicks}</p>" name="clicks" code="0"></x-cell>
-        <p>Hello, <x-cell display="hello || 'there'"></x-cell>!</p>
-        <p>Cool: <x-cell display="<button on:click={() => clicks++}>Click me</button>"></x-cell></p>
+        <x-attrs attrs="({ style: `color: ${textColor};` })">
+            <p>This text will be styled</p>
+        </x-attrs>
+
+        <hr />
+
+        <p>Want to see more?</p>
+
+        <label><x-input name="showMore">
+            <input type="checkbox" >
+        </x-input> Show more</label>
+
+        <x-if condition="showMore">
+            <h2>Special values</h2>
+            <p>There are also some special values <code>nowSec</code> and <code>nowFrameMs</code></p>
+
+            <ul>
+                <li>nowSec is <x-cell display="nowSec"></x-cell></li>
+                <li>nowFrameMs is <x-cell display="nowFrameMs"></x-cell></li>
+            </ul>
+        </x-if>
+
         <script type="module" src="../src/index.ts"></script>
     </body>
 </html>

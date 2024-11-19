@@ -1,4 +1,4 @@
-import { calc, createElement, Fragment } from '@srhazi/gooey';
+import { calc, createElement, field, Fragment } from '@srhazi/gooey';
 import * as esbuild from 'esbuild-wasm';
 import { getQuickJS } from 'quickjs-emscripten';
 import type {
@@ -12,6 +12,15 @@ import type { JavaScriptService } from './js';
 import { assert } from './utils';
 
 type ToDisposeCallback = (toDispose: Disposable) => void;
+
+const nowFrameMs = field(performance.now());
+const nowSec = field(Date.now());
+setInterval(() => nowSec.set(Date.now() / 1000), 1000);
+const tick = () => {
+    nowFrameMs.set(performance.now());
+    requestAnimationFrame(tick);
+};
+requestAnimationFrame(tick);
 
 class RealService implements JavaScriptService {
     ctx: QuickJSContext;
@@ -73,6 +82,21 @@ class RealService implements JavaScriptService {
         this.ctx.setProp(this.jsxHandle, 'Fragment', this.fragmentHandle);
         this.calcHandle = this.ctx.newFunction('calc', this.calcImpl);
         this.ctx.setProp(this.ctx.global, 'calc', this.calcHandle);
+
+        this.ctx.defineProp(this.ctx.global, 'nowSec', {
+            get: () => {
+                return this.ctx.newNumber(nowSec.get());
+            },
+            enumerable: true,
+            configurable: false,
+        });
+        this.ctx.defineProp(this.ctx.global, 'nowFrameMs', {
+            get: () => {
+                return this.ctx.newNumber(nowFrameMs.get());
+            },
+            enumerable: true,
+            configurable: false,
+        });
     }
 
     private createElementImpl = (
