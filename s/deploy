@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -e
+cd "$(dirname "$0")/.."
+# shellcheck disable=SC1091
+source "s/_tools.sh"
+
+OUTPUT=$(git status --porcelain)
+if [ "$OUTPUT" != "" ]; then
+    echo_error "git repo not clean, please commit everything"
+    git status
+    exit 1
+fi
+
+GIT_HASH=$(git rev-parse HEAD)
+if [ "$1" != "--main" ] && [ "$1" != "--try" ]; then
+    echo_error "USAGE: $0 (--main | --try)"
+    echo_error "    --main  deploy to both /${GIT_HASH} and /"
+    echo_error "    --try   deploy to just /${GIT_HASH}"
+    exit 1
+fi
+
+echo_info "Building..."
+s/build
+
+echo_info "Deploying to shareshare.abstract.properties/${GIT_HASH}..."
+rsync -azvh prod/dist/ "abstract.properties:/srv/www/shareshare.abstract.properties/${GIT_HASH}"
+echo_warn "Uploaded to: https://shareshare.abstract.properties/${GIT_HASH}/"
+
+if [ "$1" == "--main" ]; then
+    echo_info "Deploying to shareshare.abstract.properties..."
+    rsync -azvh prod/dist/ abstract.properties:/srv/www/shareshare.abstract.properties
+    echo_warn "Uploaded to: https://shareshare.abstract.properties/"
+fi
+
+echo ""
+echo_good "All done!"
