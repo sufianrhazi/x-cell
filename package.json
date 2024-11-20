@@ -1,12 +1,12 @@
 {
     "name": "x-cell",
     "author": "Sufian Rhazi <sufian@gmail.com>",
-    "version": "0.0.0",
-    "license": "UNLICENSED",
+    "version": "0.1.0",
+    "license": "BSD-3-Clause",
     "type": "module",
     "repository": {
         "type": "git",
-        "url": "https://git.abstract.properties/private/x-cell.git"
+        "url": "https://github.com/sufianrhazi/x-cell.git"
     },
     "dependencies": {
         "@srhazi/gooey": "0.18.2"
@@ -22,7 +22,6 @@
         "eslint": "^8.57.0",
         "eslint-plugin-react": "7.37.1",
         "prettier": "3.3.3",
-        "sass": "^1.80.7",
         "typescript": "^5.6.2",
         "vite": "latest"
     }
