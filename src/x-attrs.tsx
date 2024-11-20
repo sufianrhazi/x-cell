@@ -15,29 +15,66 @@ export function registerXAttrs() {
     defineCustomElement({
         tagName: 'x-attrs',
         shadowMode: 'open',
-        observedAttributes: ['attrs'],
-        Component: ({ attrs }, { onMount, onDestroy, host }) => {
+        observedAttributes: ['attrs', 'props'],
+        Component: ({ attrs, props }, { onMount, onDestroy, host }) => {
             host.style.display = 'contents';
-            const dynamicValue = new DynamicValue(undefined, attrs);
-            onDestroy(() => {
-                dynamicValue.dispose();
-            });
 
             onMount(() => {
-                return dynamicValue.resultValue.subscribe((err, val) => {
-                    if (err) {
-                        return;
-                    }
-                    if (val && typeof val === 'object') {
-                        for (const child of Array.from(host.children)) {
-                            for (const [key, value] of Object.entries(val)) {
-                                if (typeof value === 'string') {
-                                    child.setAttribute(key, value);
+                const dynamicAttrs = new DynamicValue(undefined, attrs);
+                const dynamicProps = new DynamicValue(undefined, props);
+                const unsubscribeAttrs = dynamicAttrs.resultValue.subscribe(
+                    (err, val) => {
+                        if (err) {
+                            return;
+                        }
+                        if (val && typeof val === 'object') {
+                            for (const child of Array.from(host.children)) {
+                                for (const [key, value] of Object.entries(
+                                    val
+                                )) {
+                                    switch (typeof value) {
+                                        case 'string':
+                                        case 'number':
+                                            child.setAttribute(
+                                                key,
+                                                value.toString()
+                                            );
+                                            break;
+                                        case 'boolean':
+                                            if (value) {
+                                                child.setAttribute(key, '');
+                                            } else {
+                                                child.removeAttribute(key);
+                                            }
+                                            break;
+                                    }
                                 }
                             }
                         }
                     }
-                });
+                );
+                const unsubscribeProps = dynamicProps.resultValue.subscribe(
+                    (err, val) => {
+                        if (err) {
+                            return;
+                        }
+                        if (val && typeof val === 'object') {
+                            for (const child of Array.from(host.children)) {
+                                for (const [key, value] of Object.entries(
+                                    val
+                                )) {
+                                    (child as any)[key] = value;
+                                }
+                            }
+                        }
+                    }
+                );
+                return () => {
+                    dynamicAttrs.dispose();
+                    dynamicProps.dispose();
+                    unsubscribeAttrs();
+                    unsubscribeProps();
+                };
             });
 
             return <slot />;
