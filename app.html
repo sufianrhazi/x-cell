@@ -99,8 +99,8 @@ h2 {
             <p>There are also some special values <code>nowSec</code> and <code>nowFrameMs</code></p>
 
             <ul>
-                <li>nowSec is <x-cell display="nowSec"></x-cell></li>
-                <li>nowFrameMs is <x-cell display="nowFrameMs"></x-cell></li>
+                <li>nowSec is <x-timer interval="1000" name="nowSec" display="nowSec"></x-cell></li>
+                <li>nowFrameMs is <x-timer interval="frame" name="nowFrameMs" display="nowFrameMs"></x-cell></li>
             </ul>
         </x-if>
 

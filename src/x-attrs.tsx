@@ -17,54 +17,66 @@ export function registerXAttrs() {
         shadowMode: 'open',
         observedAttributes: ['attrs', 'props'],
         Component: ({ attrs, props }, { onMount, onDestroy, host }) => {
-            host.style.display = 'contents';
-
             onMount(() => {
                 const dynamicAttrs = new DynamicValue(undefined, attrs);
                 const dynamicProps = new DynamicValue(undefined, props);
+
+                const updateNodeAttrs = (child: Element) => {
+                    const attrs = dynamicAttrs.resultValue.get();
+                    if (attrs && typeof attrs === 'object') {
+                        for (const [key, value] of Object.entries(attrs)) {
+                            switch (typeof value) {
+                                case 'string':
+                                case 'number':
+                                    child.setAttribute(key, value.toString());
+                                    break;
+                                case 'boolean':
+                                    if (value) {
+                                        child.setAttribute(key, '');
+                                    } else {
+                                        child.removeAttribute(key);
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                };
+                const updateNodeProps = (child: Element) => {
+                    const props = dynamicProps.resultValue.get();
+                    if (props && typeof props === 'object') {
+                        for (const [key, value] of Object.entries(props)) {
+                            (child as any)[key] = value;
+                        }
+                    }
+                };
+
+                const mutationObserver = new MutationObserver((entries) => {
+                    for (const entry of entries) {
+                        entry.addedNodes.forEach((node) => {
+                            if (node instanceof Element) {
+                                updateNodeAttrs(node);
+                                updateNodeProps(node);
+                            }
+                        });
+                    }
+                });
+                mutationObserver.observe(host, {
+                    childList: true,
+                });
                 const unsubscribeAttrs = dynamicAttrs.resultValue.subscribe(
                     (err, val) => {
-                        if (err) {
-                            return;
-                        }
-                        if (val && typeof val === 'object') {
+                        if (!err) {
                             for (const child of Array.from(host.children)) {
-                                for (const [key, value] of Object.entries(
-                                    val
-                                )) {
-                                    switch (typeof value) {
-                                        case 'string':
-                                        case 'number':
-                                            child.setAttribute(
-                                                key,
-                                                value.toString()
-                                            );
-                                            break;
-                                        case 'boolean':
-                                            if (value) {
-                                                child.setAttribute(key, '');
-                                            } else {
-                                                child.removeAttribute(key);
-                                            }
-                                            break;
-                                    }
-                                }
+                                updateNodeAttrs(child);
                             }
                         }
                     }
                 );
                 const unsubscribeProps = dynamicProps.resultValue.subscribe(
                     (err, val) => {
-                        if (err) {
-                            return;
-                        }
-                        if (val && typeof val === 'object') {
+                        if (!err) {
                             for (const child of Array.from(host.children)) {
-                                for (const [key, value] of Object.entries(
-                                    val
-                                )) {
-                                    (child as any)[key] = value;
-                                }
+                                updateNodeProps(child);
                             }
                         }
                     }
@@ -74,6 +86,7 @@ export function registerXAttrs() {
                     dynamicProps.dispose();
                     unsubscribeAttrs();
                     unsubscribeProps();
+                    mutationObserver.disconnect();
                 };
             });
 

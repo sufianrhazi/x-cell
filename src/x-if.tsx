@@ -18,8 +18,7 @@ export function registerXIf() {
         tagName: 'x-if',
         shadowMode: 'open',
         observedAttributes: ['condition'],
-        Component: ({ condition }, { onDestroy, host }) => {
-            host.style.display = 'contents';
+        Component: ({ condition }, { onDestroy }) => {
             const dynamicValue = new DynamicValue(undefined, condition);
             onDestroy(() => {
                 dynamicValue.dispose();

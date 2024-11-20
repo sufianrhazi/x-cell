@@ -20,10 +20,7 @@ suite('x-cell', () => {
                 <x-cell />
             </>
         );
-        assert.is(
-            '<x-cell style="display: contents;"></x-cell>',
-            testRoot.innerHTML
-        );
+        assert.is('<x-cell></x-cell>', testRoot.innerHTML);
         unmount();
     });
 

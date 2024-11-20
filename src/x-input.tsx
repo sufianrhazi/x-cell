@@ -22,9 +22,8 @@ export function registerXInput() {
         observedAttributes: ['name', 'value', 'debug'],
         Component: (
             { name, value, debug },
-            { onMount, onError, onDestroy, host }
+            { onMount, onError, onDestroy, host, addEventListener }
         ) => {
-            host.style.display = 'contents';
             const isReadonly = calc(() => dynGet(value) !== undefined);
             const dynamicValue = new DynamicValue(name, value);
 
@@ -86,7 +85,7 @@ export function registerXInput() {
                 }
             };
 
-            host.addEventListener('input', onInput);
+            addEventListener('input', onInput);
 
             onDestroy(() => {
                 dynamicValue.dispose();

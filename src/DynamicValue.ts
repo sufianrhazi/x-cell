@@ -5,6 +5,11 @@ let maxId = 0;
 
 const globals = field(new Set<string>());
 
+export function evalExpression(expressionCode: string): any {
+    const funcBody = new Function(`return (() => ${expressionCode})();`);
+    return funcBody();
+}
+
 export class DynamicValue implements Disposable {
     resultValue: Calculation<any>;
 
@@ -52,10 +57,7 @@ export class DynamicValue implements Disposable {
             // Reprocess everything if the set of globals has changed
             globals.get();
 
-            const funcBody = new Function(
-                `return (() => ${expressionCode})();`
-            );
-            const result = funcBody();
+            const result = evalExpression(expressionCode);
             this.prevEvaluated = result;
             return result;
         });

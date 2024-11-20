@@ -1,4 +1,4 @@
-import Gooey, { flush, mount, ref } from '@srhazi/gooey';
+import Gooey, { calc, field, flush, mount, ref } from '@srhazi/gooey';
 import { assert, beforeEach, suite, test } from '@srhazi/gooey-test';
 
 import { _testReset } from './svc.reset';
@@ -24,10 +24,7 @@ suite('x-attrs', () => {
                 </x-attrs>
             </>
         );
-        assert.is(
-            '<x-attrs style="display: contents;"><p>Hello there</p></x-attrs>',
-            testRoot.innerHTML
-        );
+        assert.is('<x-attrs><p>Hello there</p></x-attrs>', testRoot.innerHTML);
         unmount();
     });
 
@@ -43,6 +40,26 @@ suite('x-attrs', () => {
             '<div foo="bar" baz="bum"></div><span foo="bar" baz="bum"></span>',
             testRoot.children[0].innerHTML
         );
+        unmount();
+    });
+
+    test('it adds attributes to children when added after mounted', async () => {
+        const isAdded = field(false);
+        const divRef = ref<HTMLDivElement>();
+        const unmount = mount(
+            testRoot,
+            <x-attrs attrs="({ foo: 'bar', baz: 'bum' })">
+                {calc(() => (isAdded.get() ? <div ref={divRef} /> : null))}
+            </x-attrs>
+        );
+        assert.is(undefined, divRef.current);
+        isAdded.set(true);
+        flush();
+
+        // Wait for MutationObserver to fire
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        assert.is('<div foo="bar" baz="bum"></div>', divRef.current?.outerHTML);
         unmount();
     });
 
