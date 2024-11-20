@@ -18,8 +18,14 @@ export function registerXIf() {
         tagName: 'x-if',
         shadowMode: 'open',
         observedAttributes: ['condition'],
-        Component: ({ condition }, { onDestroy }) => {
+        Component: ({ condition }, { onMount, host, onDestroy }) => {
             const dynamicValue = new DynamicValue(undefined, condition);
+            onMount(() => {
+                dynamicValue.onMount(host);
+                return () => {
+                    dynamicValue.onUnmount();
+                };
+            });
             onDestroy(() => {
                 dynamicValue.dispose();
             });

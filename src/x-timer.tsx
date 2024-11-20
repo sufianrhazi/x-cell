@@ -29,6 +29,8 @@ export function registerXTimer() {
                 dynamicValue.dispose();
             });
             onMount(() => {
+                dynamicValue.onMount(host);
+                displayValue.onMount(host);
                 const mounted = svc('time').performanceNow();
                 const tick = () => {
                     dynamicValue.setOverride(
@@ -57,6 +59,8 @@ export function registerXTimer() {
                     }
                 );
                 return () => {
+                    dynamicValue.onUnmount();
+                    displayValue.onUnmount();
                     unsubscribeInterval();
                     cancelInterval?.();
                 };

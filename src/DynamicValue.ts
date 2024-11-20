@@ -1,37 +1,29 @@
 import { calc, dynGet, dynSubscribe, field } from '@srhazi/gooey';
 import type { Calculation, Dyn, Field } from '@srhazi/gooey';
 
-let maxId = 0;
-
-const globals = field(new Set<string>());
-
-export function evalExpression(expressionCode: string): any {
-    const funcBody = new Function(`return (() => ${expressionCode})();`);
-    return funcBody();
-}
+import { getDynamicScope } from './DynamicScope';
 
 export class DynamicValue implements Disposable {
     resultValue: Calculation<any>;
+    private resultValueHandle: (() => void) | undefined;
 
-    private id: string;
+    private mountedHost: Element | undefined;
 
     private name: Dyn<string | undefined>;
     private code: Dyn<string | undefined>;
     private subscriptions: Array<() => void>;
     private override: Field<{ value: any } | undefined>;
 
-    private currName: string | undefined;
-    private prevCompiledCode: string | undefined;
-    private currentHandle: unknown;
+    private previousBinding: (() => void) | undefined;
     private prevEvaluated: any | undefined;
 
     constructor(name: Dyn<string | undefined>, code: Dyn<string | undefined>) {
-        this.currentHandle = {};
+        this.mountedHost = undefined;
         this.name = name;
         this.code = code;
         this.override = field(undefined);
 
-        this.id = `__DynamicValue_getter_${maxId++}`;
+        this.previousBinding = undefined;
 
         this.subscriptions = [
             dynSubscribe(name, (err, name) => {
@@ -54,13 +46,27 @@ export class DynamicValue implements Disposable {
                 }
                 return undefined;
             }
-            // Reprocess everything if the set of globals has changed
-            globals.get();
 
-            const result = evalExpression(expressionCode);
+            const result = getDynamicScope(this.mountedHost).evalExpression(
+                expressionCode
+            );
+
             this.prevEvaluated = result;
             return result;
         });
+        this.resultValueHandle = undefined;
+    }
+
+    onMount(hostElement: Element) {
+        this.mountedHost = hostElement;
+        this.updateBinding(dynGet(this.name));
+        //this.resultValueHandle = this.resultValue.subscribe(() => {});
+    }
+
+    onUnmount() {
+        this.mountedHost = undefined;
+        this.updateBinding(dynGet(this.name));
+        //this.resultValueHandle?.();
     }
 
     setOverride(value: any) {
@@ -72,26 +78,21 @@ export class DynamicValue implements Disposable {
     }
 
     private updateBinding(name: string | undefined) {
-        let globalValues = globals.get();
-        if (this.currName && this.currName !== name) {
-            delete (window as any)[this.currName];
+        const dynamicScope = getDynamicScope(this.mountedHost);
+        if (this.previousBinding) {
+            this.previousBinding();
+            this.previousBinding = undefined;
         }
         if (name) {
-            Object.defineProperty(window, name, {
+            this.previousBinding = dynamicScope.addBinding(name, {
                 get: () => {
                     return this.resultValue.get();
                 },
                 set: (value: any) => {
                     this.setOverride(value);
                 },
-                configurable: true,
-                enumerable: true,
             });
-            globalValues = new Set(globalValues);
-            globalValues.add(name);
         }
-        this.currName = name;
-        globals.set(globalValues);
     }
 
     dispose() {
@@ -102,7 +103,10 @@ export class DynamicValue implements Disposable {
         if (this.prevEvaluated) {
             this.prevEvaluated = undefined;
         }
-        this.currName = undefined;
+        if (this.previousBinding) {
+            this.previousBinding();
+            this.previousBinding = undefined;
+        }
     }
 
     [Symbol.dispose]() {

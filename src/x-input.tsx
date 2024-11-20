@@ -19,9 +19,9 @@ export function registerXInput() {
     defineCustomElement({
         tagName: 'x-input',
         shadowMode: 'closed',
-        observedAttributes: ['name', 'value', 'debug'],
+        observedAttributes: ['name', 'value'],
         Component: (
-            { name, value, debug },
+            { name, value },
             { onMount, onError, onDestroy, host, addEventListener }
         ) => {
             const isReadonly = calc(() => dynGet(value) !== undefined);
@@ -93,6 +93,7 @@ export function registerXInput() {
             });
 
             onMount(() => {
+                dynamicValue.onMount(host);
                 for (const el of Array.from(
                     host.querySelectorAll('input,select,textarea')
                 )) {
@@ -158,6 +159,7 @@ export function registerXInput() {
                     }
                 );
                 return () => {
+                    dynamicValue.onUnmount();
                     unsubscribe();
                 };
             });

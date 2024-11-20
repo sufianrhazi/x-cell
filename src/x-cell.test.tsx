@@ -1,6 +1,7 @@
 import Gooey, { flush, mount, ref } from '@srhazi/gooey';
 import { assert, beforeEach, suite, test } from '@srhazi/gooey-test';
 
+import { svc } from './svc';
 import { _testReset } from './svc.reset';
 import { registerXCell } from './x-cell';
 
@@ -32,7 +33,8 @@ suite('x-cell', () => {
                 <x-cell code="42" />
             </>
         );
-        assert.is(undefined, (window as any).cool);
+
+        assert.is(undefined, svc('state').globalScope.evalExpression('cool'));
         unmount();
     });
 
@@ -44,7 +46,7 @@ suite('x-cell', () => {
             </>
         );
         flush();
-        assert.is(42, (window as any).cool);
+        assert.is(42, svc('state').globalScope.evalExpression('cool'));
         unmount();
     });
 
@@ -57,7 +59,7 @@ suite('x-cell', () => {
                 <x-cell name="both" code="cool + fun" />
             </>
         );
-        assert.is(66, (window as any).both);
+        assert.is(66, svc('state').globalScope.evalExpression('both'));
         unmount();
     });
 
@@ -73,12 +75,12 @@ suite('x-cell', () => {
         );
 
         flush();
-        assert.is(66, (window as any).both);
+        assert.is(66, svc('state').globalScope.evalExpression('both'));
 
         coolRef.current?.setAttribute('code', '1000');
         flush();
 
-        assert.is(1024, (window as any).both);
+        assert.is(1024, svc('state').globalScope.evalExpression('both'));
 
         unmount();
     });
@@ -94,16 +96,19 @@ suite('x-cell', () => {
             </>
         );
 
-        assert.is(0, (window as any).index);
-        assert.deepEqual([0, 1, 'neat'], (window as any).list);
-        assert.is(0, (window as any).pointer);
-        const listBefore = (window as any).list;
+        assert.is(0, svc('state').globalScope.evalExpression('index'));
+        assert.deepEqual(
+            [0, 1, 'neat'],
+            svc('state').globalScope.evalExpression('list')
+        );
+        assert.is(0, svc('state').globalScope.evalExpression('pointer'));
+        const listBefore = svc('state').globalScope.evalExpression('list');
 
         indexRef.current?.setAttribute('code', '2');
         flush();
 
-        assert.is('neat', (window as any).pointer);
-        assert.is(listBefore, (window as any).list);
+        assert.is('neat', svc('state').globalScope.evalExpression('pointer'));
+        assert.is(listBefore, svc('state').globalScope.evalExpression('list'));
 
         unmount();
     });

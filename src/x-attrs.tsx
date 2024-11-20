@@ -16,10 +16,12 @@ export function registerXAttrs() {
         tagName: 'x-attrs',
         shadowMode: 'open',
         observedAttributes: ['attrs', 'props'],
-        Component: ({ attrs, props }, { onMount, onDestroy, host }) => {
+        Component: ({ attrs, props }, { onDestroy, onMount, host }) => {
+            const dynamicAttrs = new DynamicValue(undefined, attrs);
+            const dynamicProps = new DynamicValue(undefined, props);
             onMount(() => {
-                const dynamicAttrs = new DynamicValue(undefined, attrs);
-                const dynamicProps = new DynamicValue(undefined, props);
+                dynamicAttrs.onMount(host);
+                dynamicProps.onMount(host);
 
                 const updateNodeAttrs = (child: Element) => {
                     const attrs = dynamicAttrs.resultValue.get();
@@ -82,12 +84,16 @@ export function registerXAttrs() {
                     }
                 );
                 return () => {
-                    dynamicAttrs.dispose();
-                    dynamicProps.dispose();
+                    dynamicAttrs.onUnmount();
+                    dynamicProps.onUnmount();
                     unsubscribeAttrs();
                     unsubscribeProps();
                     mutationObserver.disconnect();
                 };
+            });
+            onDestroy(() => {
+                dynamicAttrs.dispose();
+                dynamicProps.dispose();
             });
 
             return <slot />;

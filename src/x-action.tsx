@@ -4,7 +4,8 @@ import Gooey, {
     dynSubscribe,
 } from '@srhazi/gooey';
 
-import { DynamicValue, evalExpression } from './DynamicValue';
+import { getDynamicScope } from './DynamicScope';
+import { DynamicValue } from './DynamicValue';
 
 export function registerXAction() {
     /*
@@ -25,32 +26,35 @@ export function registerXAction() {
         observedAttributes: ['event', 'name', 'default', 'next'],
         Component: (
             { event, name, default: defaultCode, next },
-            { onMount, onDestroy, host, addEventListener }
+            { onMount, host, addEventListener, onDestroy }
         ) => {
             const dynamicValue = new DynamicValue(name, defaultCode);
-            const onEvent = (e: Event) => {
-                if (!e.defaultPrevented) {
-                    const nextCode = dynGet(next);
-                    const nextValue: any =
-                        nextCode === undefined
-                            ? undefined
-                            : evalExpression(nextCode);
-                    dynamicValue.setOverride(nextValue);
-                }
-            };
-            const rebindEventListener = (
-                prevEventName: string | undefined,
-                eventName: string | undefined
-            ) => {
-                if (prevEventName) {
-                    host.removeEventListener(prevEventName, onEvent);
-                }
-                if (eventName) {
-                    host.addEventListener(eventName, onEvent);
-                }
-            };
-
             onMount(() => {
+                dynamicValue.onMount(host);
+
+                const onEvent = (e: Event) => {
+                    if (!e.defaultPrevented) {
+                        const dynamicScope = getDynamicScope(host);
+                        const nextCode = dynGet(next);
+                        const nextValue: any =
+                            nextCode === undefined
+                                ? undefined
+                                : dynamicScope.evalExpression(nextCode);
+                        dynamicValue.setOverride(nextValue);
+                    }
+                };
+                const rebindEventListener = (
+                    prevEventName: string | undefined,
+                    eventName: string | undefined
+                ) => {
+                    if (prevEventName) {
+                        host.removeEventListener(prevEventName, onEvent);
+                    }
+                    if (eventName) {
+                        host.addEventListener(eventName, onEvent);
+                    }
+                };
+
                 let prevEventName: string | undefined = undefined;
                 const unsubscribeEventName = dynSubscribe(
                     event,
@@ -62,6 +66,7 @@ export function registerXAction() {
                     }
                 );
                 return () => {
+                    dynamicValue.onUnmount();
                     unsubscribeEventName();
                 };
             });

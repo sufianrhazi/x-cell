@@ -1,4 +1,11 @@
-import { ApplicationModel } from './state';
+import { DynamicScope } from './DynamicScope';
+import type { ApplicationModel } from './state';
 
-export const makeApplicationModel: () => ApplicationModel = () =>
-    new ApplicationModel();
+export function makeApplicationModel(): ApplicationModel {
+    return {
+        globalScope: new DynamicScope(
+            undefined,
+            window as unknown as Record<string, unknown>
+        ),
+    };
+}
