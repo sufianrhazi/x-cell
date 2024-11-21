@@ -7,7 +7,7 @@ export class DynamicValue implements Disposable {
     resultValue: Calculation<any>;
     private resultValueHandle: (() => void) | undefined;
 
-    private mountedHost: Element | undefined;
+    private mountedHost: Field<Element | undefined>;
 
     private name: Dyn<string | undefined>;
     private code: Dyn<string | undefined>;
@@ -18,7 +18,7 @@ export class DynamicValue implements Disposable {
     private prevEvaluated: any | undefined;
 
     constructor(name: Dyn<string | undefined>, code: Dyn<string | undefined>) {
-        this.mountedHost = undefined;
+        this.mountedHost = field(undefined);
         this.name = name;
         this.code = code;
         this.override = field(undefined);
@@ -47,9 +47,9 @@ export class DynamicValue implements Disposable {
                 return undefined;
             }
 
-            const result = getDynamicScope(this.mountedHost).evalExpression(
-                expressionCode
-            );
+            const result = getDynamicScope(
+                this.mountedHost.get()
+            ).evalExpression(expressionCode);
 
             this.prevEvaluated = result;
             return result;
@@ -58,15 +58,15 @@ export class DynamicValue implements Disposable {
     }
 
     onMount(hostElement: Element) {
-        this.mountedHost = hostElement;
+        this.mountedHost.set(hostElement);
         this.updateBinding(dynGet(this.name));
-        //this.resultValueHandle = this.resultValue.subscribe(() => {});
+        this.resultValueHandle = this.resultValue.subscribe(() => {});
     }
 
     onUnmount() {
-        this.mountedHost = undefined;
+        this.mountedHost.set(undefined);
         this.updateBinding(dynGet(this.name));
-        //this.resultValueHandle?.();
+        this.resultValueHandle?.();
     }
 
     setOverride(value: any) {
@@ -78,7 +78,7 @@ export class DynamicValue implements Disposable {
     }
 
     private updateBinding(name: string | undefined) {
-        const dynamicScope = getDynamicScope(this.mountedHost);
+        const dynamicScope = getDynamicScope(this.mountedHost.get());
         if (this.previousBinding) {
             this.previousBinding();
             this.previousBinding = undefined;

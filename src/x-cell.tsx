@@ -17,7 +17,10 @@ export function registerXCell() {
     defineCustomElement({
         tagName: 'x-cell',
         observedAttributes: ['name', 'code', 'display'],
-        Component: ({ name, code, display }, { onDestroy, onMount, host }) => {
+        Component: (
+            { name, code, display },
+            { onDestroy, onMount, onError, host }
+        ) => {
             const displayValue = new DynamicValue(undefined, display);
             const dynamicValue = new DynamicValue(name, code);
 
@@ -35,7 +38,15 @@ export function registerXCell() {
                 dynamicValue.dispose();
             });
 
-            return <>{calc(() => displayValue.resultValue.get())}</>;
+            return (
+                <>
+                    {calc(() => displayValue.resultValue.get()).onError(
+                        (err) => {
+                            return <pre>Uh oh! {err.toString()}</pre>;
+                        }
+                    )}
+                </>
+            );
         },
     });
 }

@@ -10,7 +10,7 @@ type DynamicScopeAccessor = {
 };
 type DynamicScopeBinding = { name: string; value: DynamicScopeAccessor };
 
-const DynamicScopeSymbol = Symbol('DynamicScope');
+export const DynamicScopeSymbol = Symbol('DynamicScope');
 
 export class DynamicScope {
     private parentScope: DynamicScope | undefined;
@@ -29,6 +29,14 @@ export class DynamicScope {
     evalExpression(expressionCode: string): unknown {
         const funcBody = new Function(`return (() => ${expressionCode})();`);
         return funcBody.call(this.scopeObject);
+    }
+
+    getBinding(name: string): DynamicScopeAccessor | undefined {
+        const binding = this.bindings.get().get(name);
+        if (binding) {
+            return binding;
+        }
+        return this.parentScope?.getBinding(name);
     }
 
     private getBindings(): DynamicScopeBinding[] {

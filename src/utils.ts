@@ -45,3 +45,5 @@ export function wrapError(e: any, msg?: string): Error {
     }
     return new Error(msg ?? 'Unknown error', { cause: e });
 }
+
+export function noop() {}

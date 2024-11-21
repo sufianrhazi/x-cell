@@ -93,4 +93,35 @@ suite('x-action', () => {
         assert.is('The light switch is: off', testRoot.textContent);
         unmount();
     });
+
+    test('it can be used to modify other cells', () => {
+        const buttonRef = ref<HTMLButtonElement>();
+        const unmount = mount(
+            testRoot,
+            <>
+                <x-cell name="clickCount" code="0" />
+                <x-action
+                    event="click"
+                    target="clickCount"
+                    next="clickCount + 1"
+                >
+                    <button ref={buttonRef}>
+                        Num clicks: <x-cell display="clickCount" />
+                    </button>
+                </x-action>
+            </>
+        );
+        assert.is('Num clicks: 0', testRoot.textContent);
+        buttonRef.current?.dispatchEvent(
+            new MouseEvent('click', { bubbles: true })
+        );
+        flush();
+        assert.is('Num clicks: 1', testRoot.textContent);
+        buttonRef.current?.dispatchEvent(
+            new MouseEvent('click', { bubbles: true })
+        );
+        flush();
+        assert.is('Num clicks: 2', testRoot.textContent);
+        unmount();
+    });
 });

@@ -112,4 +112,21 @@ suite('x-cell', () => {
 
         unmount();
     });
+
+    test('it can be used to update another cell', () => {
+        const xCellRef = ref<HTMLElement>();
+        const unmount = mount(
+            testRoot,
+            <>
+                <x-cell display="value" name="value" code="'initial'" />
+                <x-cell ref={xCellRef} name="enabled" code="false" />
+                <x-cell code="{ if (enabled) { value = 'updated' } }" />
+            </>
+        );
+        assert.is('initial', testRoot.textContent);
+        xCellRef.current?.setAttribute('code', 'true');
+        flush();
+        assert.is('updated', testRoot.textContent);
+        unmount();
+    });
 });

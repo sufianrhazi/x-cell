@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8">
+        <title>x-cell pong</title>
+<style>
+html {
+    font-family: sans-serif;
+}
+.board {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+}
+.button {
+    font-size: 80px;
+    line-height: 80px;
+}
+x-attrs,
+x-action {
+    display: contents;
+}
+</style>
+    </head>
+    <body>
+        <h1>tic-tac-toe</h1>
+
+        <x-cell name="toMove" code="'x'"></x-cell>
+        <x-cell name="a1" code="null"></x-cell>
+        <x-cell name="a2" code="null"></x-cell>
+        <x-cell name="a3" code="null"></x-cell>
+        <x-cell name="b1" code="null"></x-cell>
+        <x-cell name="b2" code="null"></x-cell>
+        <x-cell name="b3" code="null"></x-cell>
+        <x-cell name="c1" code="null"></x-cell>
+        <x-cell name="c2" code="null"></x-cell>
+        <x-cell name="c3" code="null"></x-cell>
+        <x-cell name="isWin" code="[[a1,a2,a3],[b1,b2,b3],[c1,c2,c3],[a1,b1,c1],[a2,b2,c2],[a3,b3,c3],[a1,b2,c3],[a3,b2,c1]].find((arr) => arr[0] && arr.every(item => item === arr[0]))?.[0]"></x-cell>
+        <x-cell name="isLose" code="!isWin && [a1,a2,a3,b1,b2,b3,c1,c2,c3].every((cell) => !!cell)"></x-cell>
+
+        <h2>
+            <x-if condition="isLose">
+                Everyone loses!
+            </x-if>
+            <x-if condition="!isWin && !isLose">
+                Player to move next: <x-cell display="toMove"><x-cell>
+            </x-if>
+            <x-if condition="isWin">
+                🎉 Winner: <x-cell display="isWin"><x-cell>
+            </x-if>
+        </h2>
+
+        <div class="board">
+            <x-action event="click" action="{ a1 = toMove; toMove = toMove === 'x' ? 'o' : 'x'; }">
+                <x-attrs attrs="({ disabled: !!isWin || a1 !== null })">
+                    <button class="button"><x-cell display="a1"></x-cell></button>
+                </x-attrs>
+            </x-action>
+            <x-action event="click" action="{ a2 = toMove; toMove = toMove === 'x' ? 'o' : 'x'; }">
+                <x-attrs attrs="({ disabled: !!isWin || a2 !== null })">
+                    <button class="button"><x-cell display="a2"></x-cell></button>
+                </x-attrs>
+            </x-action>
+            <x-action event="click" action="{ a3 = toMove; toMove = toMove === 'x' ? 'o' : 'x'; }">
+                <x-attrs attrs="({ disabled: !!isWin || a3 !== null })">
+                    <button class="button"><x-cell display="a3"></x-cell></button>
+                </x-attrs>
+            </x-action>
+            <x-action event="click" action="{ b1 = toMove; toMove = toMove === 'x' ? 'o' : 'x'; }">
+                <x-attrs attrs="({ disabled: !!isWin || b1 !== null })">
+                    <button class="button"><x-cell display="b1"></x-cell></button>
+                </x-attrs>
+            </x-action>
+            <x-action event="click" action="{ b2 = toMove; toMove = toMove === 'x' ? 'o' : 'x'; }">
+                <x-attrs attrs="({ disabled: !!isWin || b2 !== null })">
+                    <button class="button"><x-cell display="b2"></x-cell></button>
+                </x-attrs>
+            </x-action>
+            <x-action event="click" action="{ b3 = toMove; toMove = toMove === 'x' ? 'o' : 'x'; }">
+                <x-attrs attrs="({ disabled: !!isWin || b3 !== null })">
+                    <button class="button"><x-cell display="b3"></x-cell></button>
+                </x-attrs>
+            </x-action>
+            <x-action event="click" action="{ c1 = toMove; toMove = toMove === 'x' ? 'o' : 'x'; }">
+                <x-attrs attrs="({ disabled: !!isWin || c1 !== null })">
+                    <button class="button"><x-cell display="c1"></x-cell></button>
+                </x-attrs>
+            </x-action>
+            <x-action event="click" action="{ c2 = toMove; toMove = toMove === 'x' ? 'o' : 'x'; }">
+                <x-attrs attrs="({ disabled: !!isWin || c2 !== null })">
+                    <button class="button"><x-cell display="c2"></x-cell></button>
+                </x-attrs>
+            </x-action>
+            <x-action event="click" action="{ c3 = toMove; toMove = toMove === 'x' ? 'o' : 'x'; }">
+                <x-attrs attrs="({ disabled: !!isWin || c3 !== null })">
+                    <button class="button"><x-cell display="c3"></x-cell></button>
+                </x-attrs>
+            </x-action>
+        </div>
+
+        <hr />
+        <h3>Debug info</h3>
+
+        <pre>toMove: <x-cell display="JSON.stringify(toMove)"></x-cell></pre>
+        <pre>isWin: <x-cell display="JSON.stringify(isWin)"></x-cell></pre>
+        <pre>isLose: <x-cell display="JSON.stringify(isLose)"></x-cell></pre>
+        <pre>a1: <x-cell display="JSON.stringify(a1)"></x-cell></pre>
+        <pre>a2: <x-cell display="JSON.stringify(a2)"></x-cell></pre>
+        <pre>a3: <x-cell display="JSON.stringify(a3)"></x-cell></pre>
+        <pre>b1: <x-cell display="JSON.stringify(b1)"></x-cell></pre>
+        <pre>b2: <x-cell display="JSON.stringify(b2)"></x-cell></pre>
+        <pre>b3: <x-cell display="JSON.stringify(b3)"></x-cell></pre>
+        <pre>c1: <x-cell display="JSON.stringify(c1)"></x-cell></pre>
+        <pre>c2: <x-cell display="JSON.stringify(c2)"></x-cell></pre>
+        <pre>c3: <x-cell display="JSON.stringify(c3)"></x-cell></pre>
+
+        <script type="module" src="./src/index.ts"></script>
+    </body>
+</html>

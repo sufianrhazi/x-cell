@@ -15,17 +15,25 @@ export function registerXAction() {
      *
      * Attributes:
      * - event (string) - must be an event
-     * - name (string) - the name to bind the value
+     * - action (string) - the JavaScript code to run on event
+     * - name (string) - the JavaScript identifier to hold the default/next value
+     * - target (string) - the JavaScript cell to _modify_ the next value
      * - default (string) - the code to provide the default value
      * - next (string) - the code that produces the next value
-     *
      */
     defineCustomElement({
         tagName: 'x-action',
         shadowMode: 'open',
-        observedAttributes: ['event', 'name', 'default', 'next'],
+        observedAttributes: [
+            'event',
+            'name',
+            'action',
+            'target',
+            'default',
+            'next',
+        ],
         Component: (
-            { event, name, default: defaultCode, next },
+            { event, name, action, target, default: defaultCode, next },
             { onMount, host, addEventListener, onDestroy }
         ) => {
             const dynamicValue = new DynamicValue(name, defaultCode);
@@ -41,6 +49,16 @@ export function registerXAction() {
                                 ? undefined
                                 : dynamicScope.evalExpression(nextCode);
                         dynamicValue.setOverride(nextValue);
+                        const targetName = dynGet(target);
+                        if (targetName) {
+                            const targetValue =
+                                dynamicScope.getBinding(targetName);
+                            targetValue?.set(nextValue);
+                        }
+                        const actionCode = dynGet(action);
+                        if (actionCode) {
+                            dynamicScope.evalExpression(actionCode);
+                        }
                     }
                 };
                 const rebindEventListener = (

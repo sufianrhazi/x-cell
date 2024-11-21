@@ -35,9 +35,14 @@ export function registerXInput() {
                 if (element instanceof HTMLInputElement) {
                     switch (element.type) {
                         // Boolean input types:
-                        case 'radio':
                         case 'checkbox':
                             dynamicValue.setOverride(!!element.checked);
+                            break;
+                        // Radio buttons:
+                        case 'radio':
+                            if (element.checked) {
+                                dynamicValue.setOverride(element.value);
+                            }
                             break;
                         // Numeric input types:
                         case 'number':
@@ -89,7 +94,6 @@ export function registerXInput() {
 
             onDestroy(() => {
                 dynamicValue.dispose();
-                host.removeEventListener('input', onInput);
             });
 
             onMount(() => {
@@ -112,11 +116,14 @@ export function registerXInput() {
                             if (el instanceof HTMLInputElement) {
                                 switch (el.type) {
                                     // Boolean input types:
-                                    case 'radio':
                                     case 'checkbox':
                                         if (typeof val === 'boolean') {
                                             el.checked = !!val;
                                         }
+                                        break;
+                                    // Radio input type:
+                                    case 'radio':
+                                        el.checked = el.value === val;
                                         break;
                                     // Numeric input types:
                                     case 'number':

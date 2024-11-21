@@ -111,4 +111,110 @@ suite('x-input', () => {
 
         unmount();
     });
+
+    test('radio buttons can be grouped within a single input', () => {
+        const cellRef = ref<HTMLElement>();
+        const inputRef = ref<HTMLInputElement>();
+        const unmount = mount(
+            testRoot,
+            <div>
+                <x-input name="selectedInput">
+                    <div>
+                        <label>
+                            <input
+                                type="radio"
+                                name="together"
+                                value="one"
+                                checked
+                            />{' '}
+                            One
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input
+                                ref={inputRef}
+                                type="radio"
+                                name="together"
+                                value="two"
+                            />{' '}
+                            Two
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="radio" name="together" value="three" />{' '}
+                            Three
+                        </label>
+                    </div>
+                </x-input>
+                <x-cell ref={cellRef} display="selectedInput" />
+            </div>
+        );
+
+        assert.is('one', cellRef.current?.textContent);
+
+        inputRef.current!.checked = true;
+        inputRef.current?.dispatchEvent(
+            new InputEvent('input', { bubbles: true })
+        );
+        flush();
+
+        assert.is('two', cellRef.current?.textContent);
+
+        unmount();
+    });
+
+    test('radio buttons can be controlled within a single input', () => {
+        const input1Ref = ref<HTMLInputElement>();
+        const input2Ref = ref<HTMLInputElement>();
+        const xCellRef = ref<HTMLElement>();
+        const unmount = mount(
+            testRoot,
+            <div>
+                <x-input value={'selectedValue'}>
+                    <div>
+                        <label>
+                            <input
+                                ref={input1Ref}
+                                type="radio"
+                                name="together"
+                                value="one"
+                            />{' '}
+                            One
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input
+                                ref={input2Ref}
+                                type="radio"
+                                name="together"
+                                value="two"
+                            />{' '}
+                            Two
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="radio" name="together" value="three" />{' '}
+                            Three
+                        </label>
+                    </div>
+                </x-input>
+                <x-cell ref={xCellRef} name="selectedValue" code="'one'" />
+            </div>
+        );
+
+        assert.is(true, input1Ref.current?.checked);
+        assert.is(false, input2Ref.current?.checked);
+
+        xCellRef.current?.setAttribute('code', "'two'");
+        flush();
+
+        assert.is(false, input1Ref.current?.checked);
+        assert.is(true, input2Ref.current?.checked);
+
+        unmount();
+    });
 });

@@ -18,7 +18,10 @@ mount(
                 </a>
             </li>
             <li>
-                <a href="/app.html">Run App</a>
+                <a href="/app.html">Run Demo</a>
+            </li>
+            <li>
+                <a href="/game.html">Run Tic Tac Toe</a>
             </li>
         </ul>
     </>
