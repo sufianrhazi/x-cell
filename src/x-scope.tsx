@@ -1,8 +1,4 @@
-import Gooey, {
-    defineCustomElement,
-    dynGet,
-    dynSubscribe,
-} from '@srhazi/gooey';
+import Gooey, { defineCustomElement, dynSubscribe } from '@srhazi/gooey';
 
 import {
     DynamicScope,
